@@ -12,14 +12,16 @@ public class TurtleController extends BasicGame
 	public int xAccel = 0;
 	public int yAccel = 0;
 	
-	public int xPos = 350;
-	public int yPos = 350;
+	public int xPos;
+	public int yPos;
 	public int level;
 	
-	Image turtle;
+	Animation swim;
+	
+	Animation turtle;
 	Image swim1;
 	Image swim2;
-	Image shell;
+	Animation shell;
 	
 	public TurtleController() {
 		super("TURTLE");
@@ -42,20 +44,31 @@ public class TurtleController extends BasicGame
 		}
 	}
 	@Override
-	public void render(GameContainer container, Graphics g) throws SlickException {
-		g.setColor(new Color(50, 80, 120));
+	public void render(GameContainer container, Graphics g) throws SlickException 
+	{
+		g.setColor(new Color(30, 144, 255));
 		g.fillRect(0, 0, 800, 800);
 		turtle.draw(xPos, yPos);
 	}
 
 	@Override
-	public void init(GameContainer container) throws SlickException {
+	public void init(GameContainer container) throws SlickException 
+	{
 		swim1 = new Image("/src/turtle/view/Turtle1.png");
 		swim2 = new Image("/src/turtle/view/Turtle2.png");
-		shell = new Image("/src/turtle/view/Shell.png");
 		
-		turtle = swim1;
+		Image[] shellArr = {new Image("/src/turtle/view/Shell.png")};
+		shell = new Animation(shellArr, 10, false);
+		
+		Image[] turtleBoi = {swim1, swim2};
+		
+		swim = new Animation(turtleBoi,300,true);
+		
+		turtle = swim;
 		level = 1;
+		
+		xPos = 400 - turtle.getWidth() / 2;
+		yPos = 400 - turtle.getHeight() / 2;
 	}
 
 	@Override
@@ -77,7 +90,7 @@ public class TurtleController extends BasicGame
 			{
 				xPos -= 28;
 				yPos -= 40;
-				turtle = swim1;
+				turtle = swim;
 			}
 		}
 		
@@ -104,6 +117,17 @@ public class TurtleController extends BasicGame
 			yVelocity += yAccel;
 			xVelocity += xAccel;
 		}
+		
+		//Rotation
+		if(turtle == shell)
+		{
+			rotateTurtle(rounded(xVelocity), rounded(yVelocity));
+		}
+		else
+		{
+			rotateTurtle(xAccel, yAccel);
+		}
+			
 		//Movement
 		xPos += xVelocity/3;
 		yPos += yVelocity/3;
@@ -111,46 +135,127 @@ public class TurtleController extends BasicGame
 		//Bouncing
 		if(xPos < 0)
 		{
-			xPos = 0;
-			if(turtle != shell)
-			{
-				xVelocity /= 1.5;
-			}
-			xVelocity *= -1;
+			bounceRight();
 		}
 		if(xPos > 800 - turtle.getWidth())
 		{
-			xPos = 800 - turtle.getWidth();
-			if(turtle != shell)
-			{
-				xVelocity /= 1.5;
-			}
-			
-			xVelocity *= -1;
+			bounceLeft();
 		}
 		if(yPos < 0)
 		{
-			yPos = 0;
-			if(turtle != shell)
-			{
-				yVelocity /= 1.5;
-			}
-			
-			yVelocity *= -1;
+			bounceDown();
 		}
 		if(yPos > 800 - turtle.getHeight())
 		{
-			yPos = 800 - turtle.getHeight();
-			if(turtle != shell)
-			{
-				yVelocity /= 1.5;
-			}
-			
-			yVelocity *= -1;
+			bounceUp();
+		}
+	}
+	
+	public void bounceLeft()
+	{
+		if(turtle != shell)
+		{
+			xVelocity /= 2;
 		}
 		
-		//TODO Swim animation
+		if(xVelocity > 0)
+		{
+			xVelocity *= -1;
+		}
 		
-		turtle.draw(xPos, yPos);
+		xPos += xVelocity;
+	}
+	
+	public void bounceRight()
+	{
+		if(turtle != shell)
+		{
+			xVelocity /= 2;
+		}
+		
+		if(xVelocity < 0)
+		{
+			xVelocity *= -1;
+		}
+		xPos += xVelocity;
+	}
+	
+	public void bounceUp()
+	{
+		if(turtle != shell)
+		{
+			yVelocity /= 2;
+		}
+		
+		if(yVelocity > 0)
+		{
+			yVelocity *= -1;
+		}
+		yPos += yVelocity;
+	}
+	
+	public void bounceDown()
+	{
+		if(turtle != shell)
+		{
+			yVelocity /= 2;
+		}
+		
+		if(yVelocity < 0)
+		{
+			yVelocity *= -1;
+		}
+		yPos += yVelocity;
+	}
+	
+	public void rotateTurtle(int xMovement, int yMovement)
+	{
+		double xMov = (double) xMovement;
+		double yMov = (double) yMovement;
+		
+		double degree = 0;
+		if(yMov < 0)
+		{
+			degree = (radToDeg(Math.atan((double) (-1 * xMov/yMov))));
+		}
+		if(yMov > 0)
+		{
+			degree = 180 - (radToDeg(Math.atan((double) (xMov/yMov))));
+		}
+		if(yMov == 0)
+		{
+			if(xMov > 0)
+			{
+				degree = 90;
+			}
+			else if(xMov < 0)
+			{
+				degree = -90;
+			}
+			else
+			{
+				return;
+			}
+		}
+			
+		
+		for(int i = 0; i < turtle.getFrameCount(); i++) 
+		{
+			turtle.getImage(i).setRotation((int)(degree));
+		}
+	}
+	
+	public double radToDeg(double num)
+	{
+		return num * 180 / Math.PI;
+	}
+	
+	public int rounded(int num)
+	{
+		if (num == 1)
+		{
+			return 0;
+		}
+		return num;
 	}
 }
