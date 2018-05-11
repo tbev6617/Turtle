@@ -1,27 +1,39 @@
 package turtle.view;
 
 import org.newdawn.slick.*;
+import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.RoundedRectangle;
+
+import java.util.List;
+import java.util.ArrayList;
+
+
+
+import turtle.model.Obstacle;
 
 
 
 public class TurtleController extends BasicGame
 {
-	public int xVelocity = 0;
-	public int yVelocity = 0;
+	private int xVelocity = 0;
+	private int yVelocity = 0;
 	
-	public int xAccel = 0;
-	public int yAccel = 0;
+	private int xAccel = 0;
+	private int yAccel = 0;
 	
-	public int xPos;
-	public int yPos;
-	public int level;
+	private int xPos;
+	private int yPos;
+	private int level;
 	
-	Animation swim;
+	private Animation swim;
 	
-	Animation turtle;
-	Image swim1;
-	Image swim2;
-	Animation shell;
+	private Animation turtle;
+	private Image swim1;
+	private Image swim2;
+	private Animation shell;
+	
+	private Obstacle seaweed;
+	private List<Obstacle> obstacleList;
 	
 	public TurtleController() {
 		super("TURTLE");
@@ -49,6 +61,10 @@ public class TurtleController extends BasicGame
 		g.setColor(new Color(30, 144, 255));
 		g.fillRect(0, 0, 800, 800);
 		turtle.draw(xPos, yPos);
+		for(Obstacle obstacle : obstacleList)
+		{
+			obstacle.getImage().draw(obstacle.xPos, obstacle.yPos);
+		}
 	}
 
 	@Override
@@ -69,6 +85,11 @@ public class TurtleController extends BasicGame
 		
 		xPos = 400 - turtle.getWidth() / 2;
 		yPos = 400 - turtle.getHeight() / 2;
+		
+		//Gameplay stuff at beginning
+		seaweed = new Obstacle("Seaweed", new Image("/src/turtle/view/Seaweed.png"), 1, 40, 600 - 15, 600 - 50);
+		obstacleList = new ArrayList<Obstacle>();
+		obstacleList.add(seaweed);
 	}
 
 	@Override
@@ -94,9 +115,9 @@ public class TurtleController extends BasicGame
 			}
 		}
 		
+		//Acceleration
 		if(turtle != shell)
 		{
-			//Acceleration
 			if(keyStroke.isKeyDown(Input.KEY_LEFT))
 			{
 				xAccel -= 1;
@@ -149,6 +170,8 @@ public class TurtleController extends BasicGame
 		{
 			bounceUp();
 		}
+		
+		checkCollision();
 	}
 	
 	public void bounceLeft()
@@ -163,7 +186,7 @@ public class TurtleController extends BasicGame
 			xVelocity *= -1;
 		}
 		
-		xPos += xVelocity;
+		xPos += xVelocity - 1;
 	}
 	
 	public void bounceRight()
@@ -177,7 +200,7 @@ public class TurtleController extends BasicGame
 		{
 			xVelocity *= -1;
 		}
-		xPos += xVelocity;
+		xPos += xVelocity + 1;
 	}
 	
 	public void bounceUp()
@@ -191,7 +214,7 @@ public class TurtleController extends BasicGame
 		{
 			yVelocity *= -1;
 		}
-		yPos += yVelocity;
+		yPos += yVelocity - 1;
 	}
 	
 	public void bounceDown()
@@ -205,7 +228,7 @@ public class TurtleController extends BasicGame
 		{
 			yVelocity *= -1;
 		}
-		yPos += yVelocity;
+		yPos += yVelocity + 1;
 	}
 	
 	public void rotateTurtle(int xMovement, int yMovement)
@@ -242,6 +265,45 @@ public class TurtleController extends BasicGame
 		for(int i = 0; i < turtle.getFrameCount(); i++) 
 		{
 			turtle.getImage(i).setRotation((int)(degree));
+		}
+	}
+	
+	public void checkCollision()
+	{
+		for(int i = obstacleList.size() - 1; i >= 0; i--)
+		{
+			RoundedRectangle turtleRect = new RoundedRectangle(xPos, yPos, turtle.getCurrentFrame().getWidth(), turtle.getCurrentFrame().getHeight(), 100);
+			Rectangle obstacleRect = new Rectangle(obstacleList.get(i).xPos, obstacleList.get(i).yPos, obstacleList.get(i).getImage().getWidth(), obstacleList.get(i).getImage().getHeight());
+			if(turtleRect.intersects(obstacleRect))
+			{
+				if(xPos < obstacleList.get(i).xPos)
+				{
+					bounceLeft();
+				}
+				else
+				{
+					bounceRight();
+				}
+				
+				if(yPos < obstacleList.get(i).yPos)
+				{
+					bounceUp();
+				}
+				else
+				{
+					bounceDown();
+				}
+				
+				if(turtle == shell)
+				{
+					obstacleList.get(i).doDamage(xVelocity);
+					obstacleList.get(i).doDamage(yVelocity);
+					if(obstacleList.get(i).getHealth() <= 0)
+					{
+						obstacleList.remove(i);
+					}
+				}
+			}
 		}
 	}
 	
