@@ -89,7 +89,7 @@ public class TurtleController extends BasicGame
 		//Gameplay stuff at beginning
 		seaweed = new Obstacle("Seaweed", new Image("/src/turtle/view/Seaweed.png"), 1, 40, 600 - 15, 600 - 50);
 		obstacleList = new ArrayList<Obstacle>();
-		obstacleList.add(seaweed);
+		//obstacleList.add(seaweed);
 	}
 
 	@Override
@@ -118,19 +118,19 @@ public class TurtleController extends BasicGame
 		//Acceleration
 		if(turtle != shell)
 		{
-			if(keyStroke.isKeyDown(Input.KEY_LEFT))
+			if(keyStroke.isKeyDown(Input.KEY_LEFT) || keyStroke.isKeyDown(Input.KEY_A))
 			{
 				xAccel -= 1;
 			}
-			if(keyStroke.isKeyDown(Input.KEY_RIGHT))
+			if(keyStroke.isKeyDown(Input.KEY_RIGHT)|| keyStroke.isKeyDown(Input.KEY_D))
 			{
 				xAccel += 1;
 			}
-			if(keyStroke.isKeyDown(Input.KEY_UP))
+			if(keyStroke.isKeyDown(Input.KEY_UP)|| keyStroke.isKeyDown(Input.KEY_W))
 			{
 				yAccel -= 1;
 			}
-			if(keyStroke.isKeyDown(Input.KEY_DOWN))
+			if(keyStroke.isKeyDown(Input.KEY_DOWN)|| keyStroke.isKeyDown(Input.KEY_S))
 			{
 				yAccel += 1;
 			}
@@ -233,6 +233,7 @@ public class TurtleController extends BasicGame
 	
 	public void rotateTurtle(int xMovement, int yMovement)
 	{
+		
 		double xMov = (double) xMovement;
 		double yMov = (double) yMovement;
 		
